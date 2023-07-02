@@ -86,3 +86,40 @@ def inst_spectral_entropy_spectrogram(zxx):
     shannon_entropy_norm = shannon_entropy / max_entropy  # Normalized entropy
 
     return shannon_entropy_norm
+
+
+def spectral_entropy_welch_sv(x, fs):
+    """
+    Compute the Shannon Spectral Entropy of a signal.
+
+    This function calculates the Shannon Spectral Entropy of a given signal, which provides a single number
+    characterizing the spectral entropy and information content of the signal. The resulting value can be used to
+    efficiently compare this signal with other signals.
+
+    Parameters:
+    x (array-like): Input signal.
+    fs (float): Sampling frequency of the signal (in Hz).
+
+    Returns:
+    float: Normalized Shannon Spectral Entropy of the signal.
+
+    Notes: - The input signal is assumed to be one-dimensional. - The signal is first transformed into the frequency
+    domain using Welch's method to estimate the power spectrum. - The power spectrum is normalized to compute the
+    probability distribution. - The Shannon entropy is then calculated as the negative sum of the probability
+    distribution multiplied by the logarithm (base 2) of the probability distribution. - The resulting entropy value
+    is normalized by dividing it by the maximum possible entropy, which is determined by the length of the power
+    spectrum.
+    """
+    f, sx = signal.welch(x, fs)
+
+    # Computing the probability distribution
+    psd = sx / np.sum(sx)
+
+    # Compute the Shannon entropy
+    entropy = -np.sum(psd * np.log2(psd))
+
+    # Normalize the spectral entropy
+    max_entropy = np.log2(sx.shape[0])  # Maximum possible entropy
+    spectral_entropy_norm = entropy / max_entropy
+
+    return spectral_entropy_norm
