@@ -1,5 +1,7 @@
 import numpy as np
 from scipy import signal
+import matplotlib.pyplot as plt
+import plotly.graph_objs as go
 
 
 def inst_spectral_entropy_stft(x, fs, window_size=256, hope_size=64, window='hann'):
@@ -123,3 +125,138 @@ def spectral_entropy_welch_sv(x, fs):
     spectral_entropy_norm = entropy / max_entropy
 
     return spectral_entropy_norm
+
+
+def inst_freq(x, fs, window_size=256, hope_size=64, window='hann'):
+    """
+       Computes the instantaneous frequency of a non-stationary signal.
+
+       The instantaneous frequency of a non-stationary signal is a time-varying parameter that relates to the average
+       of the frequencies present in the signal as it evolves. This function estimates the instantaneous frequency
+       as the first conditional spectral moment of the time-frequency distribution of the input signal.
+
+       Args:
+           x (array_like): The input signal.
+           fs (float): The sampling frequency of the input signal.
+           window_size (int, optional): The size of the analysis window for the Short-Time Fourier Transform (STFT).
+               Defaults to 256.
+           hope_size (int, optional): The number of samples the analysis window is shifted for each frame in the STFT.
+               Defaults to 64.
+           window (str, optional): The type of window function to use for the STFT. Defaults to 'hann'.
+
+       Returns:
+           tuple: A tuple containing:
+               - t (array_like): The time values corresponding to the frames in the STFT.
+               - f_inst (array_like): The estimated instantaneous frequency values for each frame.
+
+       """
+    noverlap = window_size - hope_size
+    # Compute the STFT using the scipy.signal.stft function
+    f, t, zxx = signal.stft(x, fs, window=window, nperseg=window_size, noverlap=noverlap)
+    # Computes the spectrogram power spectrum
+    sxx = np.abs(zxx) ** 2
+    # Estimates the instantaneous frequency
+    f = f.reshape((-1, 1))
+    f_inst = np.dot(sxx.T, f) / np.sum(sxx, axis=0).reshape((-1, 1))
+
+    return t, f_inst
+
+
+def plot_spectrogram(x, fs, window_size=256, hope_size=64, window='hann', display_inst_freq=False):
+    """
+    Plot the spectrogram of an audio signal.
+
+    Parameters:
+        x (array-like): The input audio signal.
+        fs (int): The sampling rate of the audio signal.
+        window_size (int, optional): The size of the analysis window in samples. Default is 256.
+        hope_size (int, optional): The size of the hop between successive windows in samples. Default is 64.
+        window (str or tuple, optional): The window function to apply. Default is 'hann'.
+        display_inst_freq (bool, optional): Whether to display the instantaneous frequency on the plot. Default is False.
+
+    Returns:
+        matplotlib.figure.Figure: The generated spectrogram plot.
+
+    """
+    # Compute the number of samples that overlap between windows
+    noverlap = window_size - hope_size
+
+    # Compute the Short-Time Fourier Transform (STFT) using the scipy.signal.stft function
+    f, t, zxx = signal.stft(x, fs, window=window, nperseg=window_size, noverlap=noverlap)
+    # Compute the spectrogram power spectrum P(t,f)
+    sxx = np.abs(zxx) ** 2
+    # Convert the power spectrum to decibels (dB)
+    sxx_db = 20 * np.log(sxx / np.amax(sxx))
+    # Create a new figure with a specified size
+    plt.figure(figsize=(10, 6))
+    # Create a pseudocolor plot of the spectrogram
+    plt.pcolormesh(t, f, sxx_db, shading='gouraud')
+    # Set the title and axis labels
+    plt.title('Spectrogram [dB]')
+    plt.ylabel('Frequency [Hz]')
+    plt.xlabel('Time [s]')
+    # Add a colorbar to the plot
+    plt.colorbar()
+    # Set the color map
+    plt.set_cmap("magma")
+    # Optionally, display the instantaneous frequency
+    if display_inst_freq:
+        _, f_inst = inst_freq(x, fs, window_size=window_size, hope_size=hope_size, window=window)
+        plt.plot(t, f_inst, color='r', label='Instantaneous Frequency')
+    # Add a legend to the plot
+    plt.legend()
+    # Return the generated figure
+    return plt.gcf()
+
+
+def plotly_spectrogram(x, fs, window_size=256, hope_size=64, window='hann', display_inst_freq=False):
+    """
+    Plot the spectrogram of an audio signal using Plotly.
+
+    Parameters:
+        x (array-like): The input audio signal.
+        fs (int): The sampling rate of the audio signal.
+        window_size (int, optional): The size of the analysis window in samples. Default is 256.
+        hope_size (int, optional): The size of the hop between successive windows in samples. Default is 64.
+        window (str or tuple, optional): The window function to apply. Default is 'hann'.
+        display_inst_freq (bool, optional): Whether to display the instantaneous frequency on the plot. Default is False.
+
+    Returns:
+        plotly.graph_objects.Figure: The generated spectrogram plot.
+
+    """
+    # Compute the number of samples that overlap between windows
+    noverlap = window_size - hope_size
+    # Compute the Short-Time Fourier Transform (STFT) using the scipy.signal.stft function
+    f, t, zxx = signal.stft(x, fs, window=window, nperseg=window_size, noverlap=noverlap)
+    # Compute the spectrogram power spectrum P(t,f)
+    sxx = np.abs(zxx) ** 2
+    # Convert the power spectrum to decibels (dB)
+    sxx_db = 20 * np.log(sxx / np.amax(sxx))
+    # Create the heatmap trace for the spectrogram
+    trace = [go.Heatmap(
+        x=t,
+        y=f,
+        z=sxx_db,
+        colorscale="Magma",
+    )]
+    # Create the layout for the plot
+    layout = go.Layout(
+        title='Spectrogram with Plotly [dB]',
+        yaxis=dict(title='Frequency [Hz]'),  # y-axis label
+        xaxis=dict(title='Time [s]'),  # x-axis label
+    )
+    # Create the figure using the trace and layout
+    fig = go.Figure(data=trace, layout=layout)
+    # Optionally, compute and add the instantaneous frequency trace
+    if display_inst_freq:
+        f_aux = f.reshape((-1, 1))
+        # Compute the instantaneous frequency using the inst_freq function
+        _, f_inst = inst_freq(x, fs, window_size=window_size, hope_size=hope_size, window=window)
+        # Add the line trace of the instantaneous frequency function
+        fig.add_trace(go.Scatter(x=t, y=np.squeeze(f_inst),
+                                 mode='lines+markers',
+                                 name='Instantaneous Frequency',
+                                 line=dict(color='firebrick')))
+    # Return the generated figure
+    return fig
