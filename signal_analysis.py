@@ -256,7 +256,7 @@ def plotly_spectrogram(x, fs, window_size=256, hope_size=64, window='hann', disp
         # Add the line trace of the instantaneous frequency function
         fig.add_trace(go.Scatter(x=t, y=np.squeeze(f_inst),
                                  mode='lines+markers',
-                                 name='Instantaneous Frequency',
+                                 name='InstFreq',
                                  line=dict(color='firebrick')))
     # Return the generated figure
     return fig
