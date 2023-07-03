@@ -203,8 +203,8 @@ def plot_spectrogram(x, fs, window_size=256, hope_size=64, window='hann', displa
     if display_inst_freq:
         _, f_inst = inst_freq(x, fs, window_size=window_size, hope_size=hope_size, window=window)
         plt.plot(t, f_inst, color='r', label='Instantaneous Frequency')
-    # Add a legend to the plot
-    plt.legend()
+        # Add a legend to the plot
+        plt.legend()
     # Return the generated figure
     return plt.gcf()
 
