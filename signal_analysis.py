@@ -135,6 +135,7 @@ def inst_freq(x, fs, window_size=256, hope_size=64, window='hann'):
        of the frequencies present in the signal as it evolves. This function estimates the instantaneous frequency
        as the first conditional spectral moment of the time-frequency distribution of the input signal.
 
+        This function was inspired in the 'tfmoment' method from the Matlab instfreq function.
        Args:
            x (array_like): The input signal.
            fs (float): The sampling frequency of the input signal.
