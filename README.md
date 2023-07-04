@@ -50,9 +50,9 @@ Please ensure that these dependencies are installed before using the functions.
 ```
    git clone https://github.com/gsantosmdias/NonstationarySignalAnalysis.git
 ```
-3. Import the necessary functions into your Python environment:
+3. Import the Python module:
 ```python
-from signal_analysis import ...
+import signal_analysis
 ```
 ## Summary
 
