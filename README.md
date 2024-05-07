@@ -1,6 +1,6 @@
 # NonstationarySignalAnalysis
 
-[![GitHub](https://img.shields.io/badge/GitHub-NonstationarySignalAnalysis-blue)](https://github.com/gsantosmdias/NonstationarySignalAnalysis)
+[![GitHub](https://img.shields.io/badge/gsantosmdias-NonstationarySignalAnalysis-blue)](https://github.com/gsantosmdias/NonstationarySignalAnalysis)
 
 Nonstationary Signal Analysis is a Python library that provides powerful tools for analyzing non-stationary time series data. This repository offers a collection of functions for instantaneous time-frequency analysis and spectral entropy computation, enabling data scientists and researchers to gain valuable insights into the dynamics of time series signals.
 
